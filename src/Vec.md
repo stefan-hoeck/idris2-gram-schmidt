@@ -4,14 +4,6 @@ in Idris2. Readers are assumed to be familiar with
 languages with Haskell-like syntax in order to follow.
 Everything else, I try to explain on the go.
 
-Note: In this first implementation, we do not yet make `Vect n a`
-an instance of `Num`, since that will require some
-additional explanation. Also, we do not yet provide any
-form of totality check, accepting vectors of length zero
-in all functions, which might result in a division by zero
-error or otherwise unexpected behavior. Again, we will come
-back to this in a later implementation.
-
 This is a literate Idris2 file, so we first declare our
 module name and imports. For length indexed lists of values,
 we use `Vect` from `Data.Vect`. This come with a lot of
