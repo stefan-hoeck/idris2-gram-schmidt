@@ -6,7 +6,7 @@ Everything else, I try to explain on the go.
 
 This is a literate Idris2 file, so we first declare our
 module name and imports. For length indexed lists of values,
-we use `Vect` from `Data.Vect`. This come with a lot of
+we use `Vect` from `Data.Vect`. This comes with a lot of
 interfaces (comparable to typeclasses in Haskell) like `Functor`,
 `Applicative`,`Traversable`, `Foldable`, and `Zippable` already
 implemented.
@@ -49,7 +49,7 @@ square : Num a => a -> a
 square x = x * x
 ```
 
-Like in Haskell, we can define a constraint function with
+Like in Haskell, we can define a constrained function with
 the `Num a =>` syntax. Internally, Idris2 uses the following
 type for `square`, and before we move on, I'd like to quickly
 explain what's going on here:
@@ -62,7 +62,7 @@ Let's break this down a bit. The first argument `{0 a : Type}`
 is an *implicit* argument of type `Type`. Implicit meaning,
 that in most circumstances, Idris2 can infer it automatically
 from the context in which the function is called. The `0`
-quantifier means, that this argument will be erased at runtime,
+quantifier means, that this argument is guaranteed to be erased at runtime,
 so it is only relevant during type checking.
 You can look at a function's implicit arguments in the
 REPL by using the `:ti` command:
@@ -73,12 +73,12 @@ Vec.square : {0 a : Type} -> Num a => a -> a
 ```
 
 The second argument `{auto _ : Num a}`, which came from the `Num a =>`
-syntactic sugar is an unnamed (since the name is just an unserscore)
+syntactic sugar, is an unnamed (since the name is just an unserscore)
 *auto implicit* argument. Here we ask Idris2 to automatically search
 for a value of this type whenever we invoke `square`. In Haskell
 this is called *typeclass resolution* and likewise in Idris2 *interface resolution*,
 but in Idris2 it is also often called *proof search*, since it
-does not only work on interfaces.
+does not only work for interfaces but for (simple) proofs in general.
 
 We can now implement dot products:
 
@@ -134,7 +134,7 @@ direction xs = scale (1 / norm xs) xs
 ```
 
 Note, however, that `direction` is a rather unsafe operation
-as it contains a potential division by zero. We will look into
+as it contains a potential division by zero. We will look at
 how to make this more safe in a later post.
 From the above, we can derive two more unsafe functions:
 
@@ -197,7 +197,7 @@ yield `[3,3]`. There is a function for this in `Data.Vect`
 called `replicate`. But `replicate` takes the desired length
 of the vector as an explicit argument. We can't do that
 in our `Num` instance, but we can do something else: We
-can request the length of the vector as an unerase implicit
+can request the length of the vector as an unerased implicit
 argument
 
 ```idris
@@ -209,11 +209,11 @@ public export
 ```
 
 The `{n : Nat}` implicit argument states, that Idris2 needs
-to be able to infer `n` from the context (no surprises there,
+to be able to infer `n` from the context (no surprises here,
 as `n` would be an implicit argument for this declaration
 anyway), but that in addition, `n` will (and must not!) be
 erased at runtime (note the missing `0`). This allows us to
-refer to `n` in the declaractions body, as can be
+refer to `n` in the declaraction's body, as can be
 seen in the implementation of `fromInteger`.
 
 If we try this in the REPL, Idris needs some help to correctly
@@ -228,7 +228,7 @@ Vec> [1,2] + the (Vect _ _) [3,4]
 ```
 
 In the first example, we specify the full type: `Vect 2 Int`. In the
-second, we use underscore where we think Idris should be able
+second, we use underscores where we think Idris should be able
 to figure out the correct values on its own (it will default
 the value type to `Integer` in this case).
 
@@ -243,8 +243,8 @@ Vec> the (Vec _) [1,2] + fromInteger 0
 ```
 
 Other numeric implementations come without additional obstacles.
-The unerased implicit will always be present, however, as
-
+The unerased implicit will always be present, however, as all
+these interfaces require an implementation of `Num`:
 
 ```idris
 public export
