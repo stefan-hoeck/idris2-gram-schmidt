@@ -1,8 +1,9 @@
 ## Implementing the Gram-Schmidt method in Idris2: Take 1
 This is a tutorialish implementation of the Gram-Schmidt Algorithm
+as found [here](https://github.com/fog-hs/gram-shmidt)
 in Idris2. Readers are assumed to be familiar with
 languages with Haskell-like syntax in order to follow.
-Everything else, I try to explain on the go.
+Everything else, I'll try to explain on the go.
 
 This is a literate Idris2 file, so we first declare our
 module name and imports. For length indexed lists of values,
