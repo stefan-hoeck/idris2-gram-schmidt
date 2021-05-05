@@ -272,7 +272,7 @@ public export
 ### Increasing our functions' safety
 
 Function `direction` is non-total, as in case of a zero-length
-vector, we divide by zero. We will fix this now. First,
+vector we divide by zero. We will fix this now. First,
 we define a safe division function:
 
 ```idris
@@ -324,3 +324,59 @@ Error: Can't find an implementation for ...
 
 The error we get is quite ugly, but it actually is showing us exactly what
 Idris is trying to calculate.
+
+### Working with proofs
+
+People new to Idris might now be under the impression, that in
+general we use auto implicit arguments whenever we expect a precondition
+to hold for a function, and that Idris will then provide
+these proofs for us automagically. This only holds for rather simple
+proofs, where the steps to perform the proof search are pretty
+clear. In other circumstances, we have to provide proofs manually,
+and here I'll give some more details, how this is done.
+
+#### (WIP) Types as propositions, programs as proofs
+
+This section is work in progress. Please come back later.
+
+In type theory, a type can be considered to be a logical
+proposition, and a total (= provably terminating) implementation
+of that type is a proof that the proposition holds.
+We will look at several examples.
+
+The first thing we'd like to show is, that we can always
+extract a value from a vector of non-zero length.
+
+```idris
+public export total
+vectHead : Vect (S n) a -> a
+```
+ 
+Note, how we can specify that a vector is of non-zero length,
+by using pattern match on its length index. Given the additional
+implicit arguments `{0 n : Nat}` and `{0 a : Type}`, the proposition
+reads as follows: For all natural numbers `n` and for all types `a`,
+given a vector of `a`s of length `S n`, there is a value of type `a`.
+Now, we proof that this proposition holds by implementing `vectHead`:
+
+```idris
+vectHead (v :: _) = v
+vectHead Nil impossible
+```
+
+This is a simple pattern match, but the second clause is special:
+In order to make sure that the pattern match covers all possible
+data constructors, we have to include the case of the empty vector `Nil`.
+But this clause is impossible, since `Nil`s type is `Vect Z a`, cannot
+be unified with the given type `Vect (S n) a`. We therefore tell Idris
+that we think this clause to be impossible and Idris will answer with
+a type error if it can't verify this.
+
+Strictly speaking, it is not necessary to include the `impossible`
+clause. Idris can often figure this out itself during coverage
+checking. Yet, there are pathological cases where this doesn't work,
+therefore I consider it to be good practice to include these clauses in general.
+
+Now, we will come up with something a bit more involved.
+We'd like to somehow show - at the type level - that a vector of
+doubles is not of zero norm. We can use a type for this:
