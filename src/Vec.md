@@ -52,7 +52,8 @@ square x = x * x
 
 Like in Haskell, we can define a constrained function with
 the `Num a =>` syntax. Internally, Idris2 uses the following
-type for `square`, and before we move on, I'd like to quickly
+type for `square` (and we could ourselves have declared
+`square`s type this way), and before we move on, I'd like to quickly
 explain what's going on here:
 
 ```
@@ -267,3 +268,59 @@ public export
   recip = map recip
   (/)   = zipWith (/)
 ```
+
+### Increasing our functions' safety
+
+Function `direction` is non-total, as in case of a zero-length
+vector, we divide by zero. We will fix this now. First,
+we define a safe division function:
+
+```idris
+public export
+posDiv : (x : Double) -> (y : Double) -> {auto 0 _ : y > 0 = True} -> Double
+posDiv x y = assert_total $ x / y
+```
+
+Again, we will digest this step by step. The `(y : Double)` syntax
+allows us to give names to type arguments, either for documentation,
+or, because it allows us to refer to these named arguments
+later on the type. We need to do this here, since we ask Idris
+for an erased proof (quantity `0`!), that `y` is a positive floating
+point number: `{auto 0 _ : y > 0 = True}`.
+
+Let's try this in the REPL:
+
+```
+Vec> 10 `posDiv` 2
+5.0
+Vec> 10 `posDiv` 0
+Error: Can't find an implementation for intToBool 0 = True.
+```
+
+Note, that in the implementation of `posDiv` we are using `assert_total`:
+This is used to manually force Idris to believe that a function is indeed
+total. This is often necessary when we are dealing with primitive
+types (`Double` is such a primitive type), about the implementation of
+which Idris does know nothing. Ideally, Idris would provide a minimal
+set of such total functions (and also laws for working with primitives)
+itself, but we are not there yet.
+
+We are now ready to write a total version of `direction`:
+
+```idris
+public export
+safeDirection : (xs : Vec n) -> {auto 0 _ : norm xs > 0 = True } -> Vec n
+safeDirection xs = scale (1 `posDiv` norm xs) xs
+```
+
+In the REPL:
+
+```
+Vec> safeDirection [2,3]
+[0.5547001962252291, 0.8320502943378437]
+Vec> safeDirection [0,0]
+Error: Can't find an implementation for ...
+```
+
+The error we get is quite ugly, but it actually is showing us exactly what
+Idris is trying to calculate.
